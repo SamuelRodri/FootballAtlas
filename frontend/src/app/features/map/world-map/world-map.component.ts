@@ -1,27 +1,42 @@
-import { AfterViewInit, Component } from '@angular/core';
+import { AfterViewInit, Component, OnInit } from '@angular/core';
 import * as L from 'leaflet';
 import { GeojsonService } from '../services/geojson.service';
 import { Country } from '../../../core/models/country.model';
 import { CountryMapper } from '../../../core/mappers/country.mapper';
+import { NationalTeamRepository } from '../../national-teams/services/national-team.repository';
+import { NationalTeam } from '../../national-teams/models/national-team.model';
+import { NationalTeamDetailComponent } from '../../national-teams/components/national-team-detail/national-team-detail.component';
 
 @Component({
   selector: 'app-world-map',
-  imports: [],
+  imports: [
+    NationalTeamDetailComponent
+  ],
   templateUrl: './world-map.component.html',
   styleUrl: './world-map.component.css'
 })
 
-export class WorldMapComponent implements AfterViewInit{
+export class WorldMapComponent implements OnInit, AfterViewInit{
 
   private map!: L.Map;
   selectedCountry: Country | null = null;
+  nationalTeams: NationalTeam[] = [];
+  selectedTeam: NationalTeam | null = null;
 
   private geoJsonLayer!: L.GeoJSON;
   private selectedLayer?: L.Layer;
 
   constructor(
-    private geoJsonService: GeojsonService
+    private geoJsonService: GeojsonService,
+    private nationalTeamRepository: NationalTeamRepository
   ) {}
+
+
+  ngOnInit(): void {
+    this.nationalTeamRepository.getAll().subscribe(teams => {
+      this.nationalTeams = teams;
+    });
+  }
 
   ngAfterViewInit(): void {
     this.initializeMap();
@@ -113,6 +128,12 @@ export class WorldMapComponent implements AfterViewInit{
         });
 
         layer.on('click', () => {
+
+          const iso3 = feature.properties.iso_a3;
+
+          this.selectedTeam =  this.nationalTeams.find(
+            x => x.countryIso3 === iso3
+          ) ?? null;
 
           this.selectCountry(feature, layer);
         });
