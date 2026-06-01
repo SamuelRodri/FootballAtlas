@@ -1,1 +1,11 @@
 <div id="map"></div>
+
+@if (selectedCountry) {
+  <div class="country-panel">
+    <h2>{{ selectedCountry.name }}</h2>
+
+    <p>ISO 2: {{ selectedCountry.iso2 }}</p>
+    <p>ISO 3: {{ selectedCountry.iso3 }}</p>
+    <p>Continent: {{ selectedCountry.continent }}</p>
+  </div>
+}
