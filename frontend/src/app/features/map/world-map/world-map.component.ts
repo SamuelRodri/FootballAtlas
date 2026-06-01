@@ -1,6 +1,8 @@
 import { AfterViewInit, Component } from '@angular/core';
 import * as L from 'leaflet';
 import { GeojsonService } from '../services/geojson.service';
+import { Country } from '../../../core/models/country.model';
+import { CountryMapper } from '../../../core/mappers/country.mapper';
 
 @Component({
   selector: 'app-world-map',
@@ -12,7 +14,10 @@ import { GeojsonService } from '../services/geojson.service';
 export class WorldMapComponent implements AfterViewInit{
 
   private map!: L.Map;
-  selectedCountry: any = null;
+  selectedCountry: Country | null = null;
+
+  private geoJsonLayer!: L.GeoJSON;
+  private selectedLayer?: L.Layer;
 
   constructor(
     private geoJsonService: GeojsonService
@@ -21,6 +26,58 @@ export class WorldMapComponent implements AfterViewInit{
   ngAfterViewInit(): void {
     this.initializeMap();
   }
+
+
+  private getDefaultStyle(): L.PathOptions {
+    return {
+      color: '#666',
+      weight: 1,
+      fillOpacity: 0
+    };
+  }
+
+  private getHoverStyle(): L.PathOptions {
+    return {
+      color: '#3388ff',
+      weight: 3,
+      fillOpacity: 0.2
+    };
+  }
+
+  private getSelectedStyle(): L.PathOptions {
+    return {
+      color: '#ff6600',
+      weight: 3,
+      fillOpacity: 0.3
+    };
+  }
+
+  private selectCountry(
+    feature: any,
+    layer: L.Layer
+  ): void {
+
+    if (this.selectedLayer) {
+      this.geoJsonLayer.resetStyle(
+        this.selectedLayer as L.Path
+      );
+    }
+
+    this.selectedLayer = layer;
+
+    (layer as L.Path).setStyle(
+      this.getSelectedStyle()
+    );
+
+    this.selectedCountry = CountryMapper.fromGeoJson(feature.properties);
+
+    this.map.fitBounds(
+      (layer as L.Polygon).getBounds()
+    );
+  }
+
+
+
 
   private initializeMap(): void {
 
@@ -32,32 +89,36 @@ export class WorldMapComponent implements AfterViewInit{
 
   this.geoJsonService.loadWorldGeoJson().subscribe(data => {
 
-    console.log('GeoJSON data loaded:', data);
+    this.geoJsonLayer = L.geoJSON(data, {
+      style: () => this.getDefaultStyle(),
 
-    L.geoJSON(data, {
-      style: {
-        color: 'red',
-        weight: 2,
-        fillOpacity: 0
-      },
       onEachFeature: (feature, layer) => {
+
+        layer.on('mouseover', (e) => {
+
+          if (layer !== this.selectedLayer) {
+            (e.target as L.Path).setStyle(
+              this.getHoverStyle()
+            );
+          }
+        });
+
+        layer.on('mouseout', (e) => {
+
+          if (layer !== this.selectedLayer) {
+            this.geoJsonLayer.resetStyle(
+              e.target as L.Path
+            );
+          }
+        });
 
         layer.on('click', () => {
 
-          this.selectedCountry = {
-            name: feature.properties.name,
-            nameEs: feature.properties.name_es,
-            iso2: feature.properties.iso_a2,
-            iso3: feature.properties.iso_a3,
-            continent: feature.properties.continent
-          }
-
-          console.log(this.selectedCountry);
+          this.selectCountry(feature, layer);
         });
 
       }
     }).addTo(this.map);
-
   });
 }
 }

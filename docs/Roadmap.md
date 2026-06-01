@@ -2,9 +2,9 @@
 
 ## Phase 1 - Technical Validation
 
-- [ ] Display an interactive world map
-- [ ] Load GeoJSON data
-- [ ] Interact with countries
+- [x] Display an interactive world map
+- [x] Load GeoJSON data
+- [x] Interact with countries
 
 ## Phase 2 - Football Data
 
