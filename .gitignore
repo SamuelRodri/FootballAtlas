@@ -1,0 +1,19 @@
+# Visual Studio
+.vs/
+
+# Build
+bin/
+obj/
+
+# Rider
+.idea/
+
+# VS Code
+.vscode/
+
+# Node
+node_modules/
+
+# Angular
+dist/
+.angular/
