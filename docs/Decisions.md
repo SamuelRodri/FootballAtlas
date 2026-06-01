@@ -35,3 +35,10 @@ Priority will be given to public or free APIs.
 
 Reason:
 Avoid vendor lock-in and reduce costs.
+
+### Map Library
+
+Leaflet
+
+Reason:
+Open source, lightweight, GeoJSON support and large ecosystem.
